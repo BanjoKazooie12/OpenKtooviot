@@ -60,6 +60,11 @@ if ($gitVersionString -eq $version['BUILD_GIT_VERSION_STRING']) {
   exit 0
 }
 
+# Defaults for repositories without any version tags, matching version.sh
+$version['TAGGED_RELEASE'] = $false
+$version['RESOURCE_BASE_VERSION'] = @(0, 0, 0)
+$version['INSTALLER_VERSION'] = '0.0.0'
+
 if ($exactGitTag -match $semVerMatch) {
   $version['TAGGED_RELEASE'] = $true
   $version['RESOURCE_BASE_VERSION'] = $Matches[1..3]
