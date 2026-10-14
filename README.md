@@ -15,6 +15,13 @@
 
 ## התקנה
 
+| מערכת הפעלה | דרך ההתקנה |
+|---|---|
+| Windows (64 ביט) | [קובץ התקנה או גרסה ניידת](#windows) מעמוד ה-Releases |
+| Linux – Ubuntu, Debian והפצות המבוססות עליהן | [סקריפט התקנה](#ubuntu-ו-debian) שבונה ומתקין בפקודה אחת |
+| Linux – הפצות אחרות | [בנייה מקוד המקור](#הפצות-linux-אחרות) |
+| macOS | אין עדיין חבילה מוכנה – [פרטים](#macos) |
+
 ### Windows
 
 1. היכנסו לעמוד ה-[Releases](https://github.com/BanjoKazooie12/OpenKtooviot/releases/latest) של הפרויקט.
@@ -22,23 +29,70 @@
 3. קובץ ההתקנה אינו חתום דיגיטלית, ולכן Windows עשוי להציג את האזהרה
    "Windows protected your PC" – לחצו על **More info** ואז על **Run anyway**.
 
-רוצים בלי התקנה? הורידו מאותו עמוד את הגרסה הניידת (`…-portable.zip`), חלצו אותה
-והפעילו את `aegisub.exe` שבתוכה.
+**גרסה ניידת, ללא התקנה:** הורידו מאותו עמוד את הקובץ `…-portable.zip`, חלצו אותו
+והפעילו את `aegisub.exe` שבתוכו.
 
-OpenKtooviot מותקן בנפרד מ-Aegisub, כך שאפשר להחזיק את שתי התוכנות באותו מחשב.
+הערות:
 
-### Ubuntu
+- קובץ ההתקנה נבנה אוטומטית, אך גרסת Windows נבדקה פחות מגרסת Linux –
+  נשמח לדיווחים על בעיות.
+- OpenKtooviot מותקן בנפרד מ-Aegisub, עם תיקייה והגדרות משלו
+  (`%APPDATA%\OpenKtooviot`), כך שאפשר להחזיק את שתי התוכנות באותו מחשב.
+- מילון האיות העברי אינו כלול בהתקנה ל-Windows, ולכן מילים בעברית פשוט אינן נבדקות.
+  כדי להפעיל בדיקת איות בעברית, העתיקו את הקבצים `he_IL.dic` ו-`he_IL.aff`
+  (למשל מ-[מאגר המילונים של LibreOffice](https://github.com/LibreOffice/dictionaries/tree/master/he_IL))
+  לתיקייה `%APPDATA%\OpenKtooviot\dictionaries`.
 
-הורידו את קוד המקור והריצו את סקריפט ההתקנה. הסקריפט מתקין את התלויות (כולל המילון העברי),
-בונה את התוכנה ומתקין אותה למשתמש שלכם בלבד, עם קיצור דרך בתפריט היישומים:
+### Linux
+
+#### Ubuntu ו-Debian
+
+סקריפט ההתקנה מתקין את התלויות (כולל המילון העברי), בונה את התוכנה ומתקין אותה
+למשתמש שלכם בלבד (בתיקייה `~/.local`), עם קיצור דרך בתפריט היישומים:
 
 ```bash
+sudo apt install git
 git clone https://github.com/BanjoKazooie12/OpenKtooviot.git
 cd OpenKtooviot
 ./tools/install-ubuntu.sh
 ```
 
-הבנייה הראשונה נמשכת כמה דקות. לעדכון לגרסה חדשה: `git pull` והרצה חוזרת של הסקריפט.
+- הבנייה הראשונה נמשכת כמה דקות. הסקריפט נבדק ב-Ubuntu.
+- **עדכון לגרסה חדשה:** `git pull` בתיקיית הפרויקט והרצה חוזרת של הסקריפט.
+- **הסרה:** `ninja -C build-release uninstall` בתיקיית הפרויקט.
+
+#### הפצות Linux אחרות
+
+התקינו בעזרת מנהל החבילות של ההפצה את כלי הבנייה ואת ספריות הפיתוח הבאות:
+meson ו-ninja, gettext, wxWidgets 3.2 (GTK 3), Boost (chrono, locale, regex, system, thread),
+ICU, libass, FFMS2, FFTW3, Hunspell, uchardet, libcurl, fontconfig, zlib, OpenGL,
+וספריית שמע אחת לפחות (PulseAudio, ALSA או OpenAL). שמות החבילות משתנים מהפצה להפצה –
+רשימת החבילות של Ubuntu נמצאת בקובץ [`tools/install-ubuntu.sh`](tools/install-ubuntu.sh).
+
+אחר כך בנו והתקינו:
+
+```bash
+git clone https://github.com/BanjoKazooie12/OpenKtooviot.git
+cd OpenKtooviot
+meson setup build-release --buildtype=release --prefix=$HOME/.local
+meson compile -C build-release
+meson install -C build-release
+```
+
+התוכנה מותקנת כ-`~/.local/bin/aegisub`. להפעלת בדיקת איות בעברית, התקינו את המילון
+העברי של Hunspell (`he_IL`) מחבילות ההפצה.
+
+ב-Linux ההגדרות נשמרות בתיקייה `~/.aegisub` – אותה תיקייה שבה משתמש Aegisub.
+
+### macOS
+
+עדיין אין חבילת התקנה מוכנה ל-macOS. אפשר לבנות את התוכנה מקוד המקור לפי
+[הוראות הבנייה של Aegisub](https://github.com/TypesettingTools/Aegisub#os-x), אבל:
+
+- התוכנה שנבנית עדיין נקראת Aegisub ומשתמשת באותה תיקיית הגדרות, ולכן תתנגש
+  בהתקנה קיימת של Aegisub.
+- היפוך הממשק לימין־לשמאל אינו נתמך ב-macOS (מגבלה של wxWidgets).
+- הקוד נבנה בהצלחה ב-macOS, אך התוכנה עדיין לא נבדקה בשימוש בפועל על Mac.
 
 ---
 
@@ -98,13 +152,19 @@ cd OpenKtooviot
 
 הפעלה מהירה עם Ollama:
 
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-ollama pull qwen3-vl:8b
-```
+1. הורידו והתקינו את Ollama מ-[ollama.com/download](https://ollama.com/download) – יש גרסאות
+   ל-Windows, ל-macOS ול-Linux.
+2. הורידו מודל בעזרת שורת הפקודה (Terminal, או PowerShell ב-Windows):
+
+   ```bash
+   ollama pull qwen3-vl:8b
+   ```
+
+3. בחלון הסוכן בחרו בשירות **Ollama (מודלים מקומיים)** ובמודל שהורדתם.
 
 כדי להשתמש ב-Ollama שרץ על מחשב אחר ברשת, הגדירו את כתובתו בהעדפות ← אוטומציה ← Ollama
-(למשל `http://192.168.1.50:11434`), והפעילו את Ollama באותו מחשב עם `OLLAMA_HOST=0.0.0.0`.
+(למשל `http://192.168.1.50:11434`). במחשב שבו Ollama רץ, הגדירו את משתנה הסביבה
+`OLLAMA_HOST` לערך `0.0.0.0` והפעילו את Ollama מחדש.
 
 ---
 
@@ -118,35 +178,16 @@ ollama pull qwen3-vl:8b
 
 ---
 
-## בנייה מקוד המקור (Linux)
+## בנייה ופיתוח
 
-הבנייה נבדקה ב-Ubuntu. התקנת התלויות:
+- **Linux:** ראו [הפצות Linux אחרות](#הפצות-linux-אחרות). להרצת הבדיקות: `meson test -C build-release`.
+- **Windows ו-macOS:** הבנייה זהה לזו של Aegisub – ראו את
+  [הוראות הבנייה של Aegisub](https://github.com/TypesettingTools/Aegisub#building-aegisub).
+- את סוכן ה-AI אפשר לכבות בזמן הבנייה עם `-Denable_ai_agent=false`.
 
-```bash
-sudo apt install build-essential pkg-config meson ninja-build gettext intltool \
-  libfontconfig1-dev libass-dev libboost-chrono-dev libboost-locale-dev \
-  libboost-regex-dev libboost-system-dev libboost-thread-dev zlib1g-dev \
-  wx3.2-headers libwxgtk3.2-dev icu-devtools libicu-dev libpulse-dev \
-  libasound2-dev libopenal-dev libffms2-dev libfftw3-dev libhunspell-dev \
-  libuchardet-dev libcurl4-gnutls-dev libgl1-mesa-dev libgtest-dev \
-  libgmock-dev libportal-gtk3-dev hunspell-he
-```
-
-(`hunspell-he` הוא מילון האיות העברי; שאר החבילות נדרשות לבנייה.)
-
-בנייה, הרצת הבדיקות והתקנה:
-
-```bash
-meson setup build --buildtype=debugoptimized --prefix=$HOME/.local/opt/openktooviot
-meson compile -C build
-meson test -C build
-meson install -C build
-```
-
-את סוכן ה-AI אפשר לכבות בזמן הבנייה עם `-Denable_ai_agent=false`.
-
-הבנייה ל-Windows ול-macOS לא נבדקה בגרסה זו. ההוראות הכלליות זהות לאלו של
-[Aegisub המקורי](https://github.com/TypesettingTools/Aegisub#building-aegisub).
+GitHub Actions בונה את התוכנה ל-Windows, ל-Linux ול-macOS בכל דחיפה לענף `master`
+(ראו [`.github/workflows/ci.yml`](.github/workflows/ci.yml)). דחיפה של תגית גרסה, למשל
+`v1.0.0`, מפרסמת אוטומטית את קובץ ההתקנה ואת הגרסה הניידת ל-Windows בעמוד ה-Releases.
 
 ---
 
