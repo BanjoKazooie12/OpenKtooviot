@@ -8,8 +8,9 @@
 #include "fragment_strings.iss"
 
 [Setup]
-AppID={{24BC8B57-716C-444F-B46B-A3349B9164C5}
-DefaultDirName={commonpf}\Aegisub
+; OpenKtooviot has its own ID so that it installs alongside Aegisub
+AppID={{EC56659D-C5AE-495F-BC8F-79B4323EDF8D}
+DefaultDirName={commonpf}\OpenKtooviot
 PrivilegesRequired=poweruser
 #ifdef ARM64
 ArchitecturesInstallIn64BitMode=arm64
@@ -42,21 +43,20 @@ end;
 
 function InitializeSetup: Boolean;
 begin
-  Result := InitializeSetupMigration;
+  // The migration code finds and removes old Aegisub installations, which an
+  // OpenKtooviot installer must leave alone
+  Result := True;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   Updates: String;
 begin
-  CurStepChangedMigration(CurStep);
-
   if CurStep = ssPostInstall then
   begin
-    if WizardIsTaskSelected('checkforupdates') then
-      Updates := 'true'
-    else
-      Updates := 'false';
+    // OpenKtooviot is built without the update checker, which would check
+    // for Aegisub updates
+    Updates := 'false';
 
     SaveStringToFile(
       ExpandConstant('{app}\installer_config.json'),

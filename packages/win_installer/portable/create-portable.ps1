@@ -47,7 +47,7 @@ if (-not $GitVersionMatch) {
     throw "Could not read BUILD_GIT_VERSION_STRING from $GitVersionHeader"
 }
 $GitVersion = $GitVersionMatch.Matches[0].Groups[1].Value
-$PortableZipPath = Join-Path $BuildRoot "Aegisub-$GitVersion-$Architecture-portable.zip"
+$PortableZipPath = Join-Path $BuildRoot "OpenKtooviot-$GitVersion-$Architecture-portable.zip"
 
 Write-Step 'Removing previous output'
 Remove-Item -LiteralPath $PortableOutputDir -Force -Recurse -ErrorAction SilentlyContinue

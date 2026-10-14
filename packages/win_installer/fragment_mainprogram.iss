@@ -15,27 +15,26 @@ Name: "macros\modules\depctrl"; Description: "DependencyControl"; Types: full
 #endif
 Name: "dictionaries"; Description: "Spellcheck Dictionaries"; Types: full basic
 Name: "dictionaries\en_US"; Description: "English (US)"; Types: full basic
-Name: "translations"; Description: "Aegisub Translations"; Types: full basic
+Name: "translations"; Description: "Translations"; Types: full basic
 
 [Tasks]
 Name: "startmenuicon"; Description: "{cm:StartMenuIcon}"; GroupDescription: "{cm:AdditionalIcons}"
-Name: "checkforupdates"; Description: "{cm:CheckForUpdates}"; GroupDescription: "{cm:UpdatesGroup}"
 
 [Files]
 ; main
-DestDir: {app}; Source: "{#BUILD_ROOT}\aegisub.exe"; Flags: ignoreversion; Components: main
+DestDir: {app}; Source: "{#BUILD_ROOT}\aegisub.exe"; DestName: openktooviot.exe; Flags: ignoreversion; Components: main
 DestDir: {app}; Source: "{#INSTALLER_DIR}\license.txt"; Flags: ignoreversion; Components: main
 
 [Icons]
-Name: {commonprograms}\Aegisub; Filename: {app}\aegisub.exe; WorkingDir: {app}; IconIndex: 0; Tasks: startmenuicon; Comment: Create and edit subtitle files
+Name: {commonprograms}\OpenKtooviot; Filename: {app}\openktooviot.exe; WorkingDir: {app}; IconIndex: 0; Tasks: startmenuicon; Comment: Create and edit subtitle files
 
 [Registry]
 ; Register in App Paths so the user can conveniently enter 'aegisub' in their Run box
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\aegisub.exe"; ValueType: string; ValueName: ""; ValueData: "{app}\aegisub.exe"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\aegisub.exe"; ValueType: string; ValueName: ""; ValueData: "{app}\aegisub.exe"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\openktooviot.exe"; ValueType: string; ValueName: ""; ValueData: "{app}\openktooviot.exe"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\openktooviot.exe"; ValueType: string; ValueName: ""; ValueData: "{app}\openktooviot.exe"; Flags: uninsdeletekey
 
 [Run]
-Filename: {app}\aegisub.exe; Description: {cm:LaunchProgram,Aegisub}; Flags: nowait postinstall skipifsilent
+Filename: {app}\openktooviot.exe; Description: {cm:LaunchProgram,OpenKtooviot}; Flags: nowait postinstall skipifsilent
 
 [InstallDelete]
 Type: files; Name: "{app}\ffms2_64.dll"

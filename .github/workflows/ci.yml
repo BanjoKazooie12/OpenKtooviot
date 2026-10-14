@@ -24,8 +24,10 @@ jobs:
       # Pull request checkouts use a detached merge commit. Preserve the source
       # branch in generated non-release version and artifact names.
       AEGISUB_BUILD_BRANCH: ${{ github.head_ref || github.ref_name }}
-      # Same condition as windows-sign-executable
-      AEGISUB_SIGN_WINDOWS: ${{ matrix.config.os == 'windows-latest' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci/windows-signing') }}
+      # Same condition as windows-sign-executable. Signing needs the signing
+      # service set up for this repository, so it's opt-in through the
+      # AEGISUB_SIGN_WINDOWS repository variable.
+      AEGISUB_SIGN_WINDOWS: ${{ vars.AEGISUB_SIGN_WINDOWS == 'true' && matrix.config.os == 'windows-latest' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci/windows-signing') }}
       SCCACHE_GHA_ENABLED: "true"
       SCCACHE_C_CUSTOM_CACHE_BUSTER: ${{ matrix.config['sccache-key'] }}
 
@@ -274,7 +276,7 @@ jobs:
         if: matrix.config.os == 'windows-latest' && env.AEGISUB_SIGN_WINDOWS != 'true'
         with:
           name: ${{ matrix.config.name }} - installer
-          path: build/Aegisub-*.exe
+          path: build/OpenKtooviot-*.exe
           if-no-files-found: error
 
       - name: Upload artifacts - portable.zip
@@ -282,7 +284,7 @@ jobs:
         if: matrix.config.os == 'windows-latest' && env.AEGISUB_SIGN_WINDOWS != 'true'
         with:
           name: ${{ matrix.config.name }} - portable
-          path: build/Aegisub-*-portable.zip
+          path: build/OpenKtooviot-*-portable.zip
           if-no-files-found: error
 
       # Release builds are signed and packaged by the windows-* jobs below
@@ -303,7 +305,7 @@ jobs:
             build/git_version.h
             build/po/*/LC_MESSAGES/aegisub.mo
             build/installer-deps/
-            build/Aegisub-*-portable.zip
+            build/OpenKtooviot-*-portable.zip
           if-no-files-found: error
 
       # macOS artifacts
@@ -376,7 +378,7 @@ jobs:
   windows-sign-executable:
     name: Windows - sign executable
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci/windows-signing'
+    if: vars.AEGISUB_SIGN_WINDOWS == 'true' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci/windows-signing')
     permissions:
       id-token: write
     uses: ./.github/workflows/sign-windows.yml
@@ -408,18 +410,18 @@ jobs:
         run: |
           Copy-Item signed\aegisub.exe build\aegisub.exe -Force
           tools\win-installer-setup.ps1 "$PWD\build" "$PWD" x64 -NoBuild
-          packages\win_installer\portable\replace-executable.ps1 (Get-Item build\Aegisub-*-portable.zip) build\aegisub.exe
+          packages\win_installer\portable\replace-executable.ps1 (Get-Item build\OpenKtooviot-*-portable.zip) build\aegisub.exe
 
       - uses: actions/upload-artifact@v7
         with:
           name: Windows signing - unsigned installer
-          path: build/Aegisub-*.exe
+          path: build/OpenKtooviot-*.exe
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v7
         with:
           name: Windows MSVC Release - portable
-          path: build/Aegisub-*-portable.zip
+          path: build/OpenKtooviot-*-portable.zip
           if-no-files-found: error
 
   windows-sign-installer:
@@ -431,3 +433,39 @@ jobs:
     with:
       artifact: Windows signing - unsigned installer
       signed-artifact: Windows MSVC Release - installer
+
+  # Publish the Windows installer and portable zip when a version is tagged
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') && vars.AEGISUB_SIGN_WINDOWS != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: Windows MSVC Release - *
+          merge-multiple: true
+          path: dist
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -l dist
+          cat > notes.md <<'NOTES'
+          ## התקנה
+
+          **Windows:** הורידו את קובץ ההתקנה `OpenKtooviot-…-x64.exe` והפעילו אותו.
+          הקובץ אינו חתום דיגיטלית, ולכן Windows עשוי להציג אזהרה – בחרו "מידע נוסף" ואז "הפעל בכל זאת".
+          לחלופין, הורידו את הגרסה הניידת (`portable.zip`), חלצו אותה והפעילו את `aegisub.exe` שבתוכה – ללא התקנה.
+
+          **Ubuntu:** ראו את הוראות ההתקנה ב-README.
+
+          OpenKtooviot אינו קשור למפתחי Aegisub המקוריים.
+          NOTES
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "OpenKtooviot $GITHUB_REF_NAME" \
+            --notes-file notes.md

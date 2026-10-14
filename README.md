@@ -13,6 +13,35 @@
 
 ---
 
+## התקנה
+
+### Windows
+
+1. היכנסו לעמוד ה-[Releases](https://github.com/BanjoKazooie12/OpenKtooviot/releases/latest) של הפרויקט.
+2. הורידו את קובץ ההתקנה `OpenKtooviot-…-x64.exe` והפעילו אותו.
+3. קובץ ההתקנה אינו חתום דיגיטלית, ולכן Windows עשוי להציג את האזהרה
+   "Windows protected your PC" – לחצו על **More info** ואז על **Run anyway**.
+
+רוצים בלי התקנה? הורידו מאותו עמוד את הגרסה הניידת (`…-portable.zip`), חלצו אותה
+והפעילו את `aegisub.exe` שבתוכה.
+
+OpenKtooviot מותקן בנפרד מ-Aegisub, כך שאפשר להחזיק את שתי התוכנות באותו מחשב.
+
+### Ubuntu
+
+הורידו את קוד המקור והריצו את סקריפט ההתקנה. הסקריפט מתקין את התלויות (כולל המילון העברי),
+בונה את התוכנה ומתקין אותה למשתמש שלכם בלבד, עם קיצור דרך בתפריט היישומים:
+
+```bash
+git clone https://github.com/BanjoKazooie12/OpenKtooviot.git
+cd OpenKtooviot
+./tools/install-ubuntu.sh
+```
+
+הבנייה הראשונה נמשכת כמה דקות. לעדכון לגרסה חדשה: `git pull` והרצה חוזרת של הסקריפט.
+
+---
+
 ## מה חדש בגרסה זו
 
 ### תמיכה בעברית

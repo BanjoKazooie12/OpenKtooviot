@@ -1,5 +1,6 @@
 ﻿[CustomMessages]
 InstallRuntime=Installing runtime libraries...
+he.InstallRuntime=מתקין ספריות זמן ריצה...
 pt_PT.InstallRuntime=A instalar livrarias de runtime...
 uk_UA.InstallRuntime=Встановлюю бібліотеки реального часу...
 #ifdef UNOFFICIAL_LANGUAGES
@@ -11,6 +12,7 @@ zh_TW.InstallRuntime=正在安裝運行庫……
 #endif
 
 StartMenuIcon=Create a start menu icon
+he.StartMenuIcon=יצירת סמל בתפריט התחלה
 pt_PT.StartMenuIcon=Criar ícone no menu iniciar
 uk_UA.StartMenuIcon=Створити піктограму в меню Запустити
 #ifdef UNOFFICIAL_LANGUAGES
@@ -45,13 +47,7 @@ zh_TW.UpdatesGroup=自動更新：
 
 ; Replacement for License page, no need to bother the user with legal mumbo-jumbo
 [Messages]
-WelcomeLabel2=This will install Aegisub {#BUILD_GIT_VERSION_STRING} on your computer.%n%nAegisub is covered by the GNU General Public License version 2. This means you may use the application for any purpose without charge, but that no warranties of any kind are given either.%n%nSee the Aegisub website for information on obtaining the source code.
-pt_PT.WelcomeLabel2=Irá ser instalado no seu computador a versão {#BUILD_GIT_VERSION_STRING} do Aegisub.%n%nO Aegisub está protegido sob a Licença Pública Geral GNU (GPL version 2). O que significa que poderá fazer uso da aplicação para qualquer propósito, sem que seja cobrado, mas não serão dadas quaisquer tipos de garantias.%n%nVeja a página do Aegisub para mais informações sobre como obter o código-fonte.
-uk_UA.WelcomeLabel2=Зараз буде встанвлено Aegisub {#BUILD_GIT_VERSION_STRING} на ваш комп'ютер.%n%nAegisub захищено універсальною громадською ліцензією GNU, версія 2. Це означає, що ви можете використосувати цю програму для будь яких цілей безкоштовно, але, в будь-якому випадку, ми не даємо жодних гарантій.%n%nДивіться сайт Aegisub для інформації щодо отримання вихідного коду.
+WelcomeLabel2=This will install OpenKtooviot {#BUILD_GIT_VERSION_STRING} on your computer.%n%nOpenKtooviot is a modified version of Aegisub with Hebrew and right-to-left support and a built-in AI agent. It is not affiliated with, endorsed by or supported by the Aegisub developers.%n%nLike Aegisub, it is covered by the GNU General Public License version 2. This means you may use the application for any purpose without charge, but that no warranties of any kind are given either.%n%nThe source code is available at github.com/BanjoKazooie12/OpenKtooviot.
+he.WelcomeLabel2=אשף זה יתקין את OpenKtooviot {#BUILD_GIT_VERSION_STRING} במחשב שלך.%n%nOpenKtooviot היא גרסה מעודכנת של Aegisub עם תמיכה בעברית ובכתיבה מימין לשמאל, וסוכן AI מובנה. הגרסה אינה קשורה למפתחי Aegisub, אינה מאושרת על ידם ואינה נתמכת על ידם.%n%nבדומה ל־Aegisub, היא מוגנת ברישיון הציבורי הכללי של GNU, גרסה 2. משמעות הדבר היא שמותר להשתמש ביישום לכל מטרה ללא תשלום, אך גם שלא ניתנת שום אחריות מכל סוג שהוא.%n%nקוד המקור זמין בכתובת github.com/BanjoKazooie12/OpenKtooviot.
 #ifdef UNOFFICIAL_LANGUAGES
-el.WelcomeLabel2=Αυτό θα εγκαταστήσει το Aegisub {#BUILD_GIT_VERSION_STRING} στον υπολογιστή σας.%n%nΤο Aegisub καλύπτεται από τον άδεια GNU General Public License version 2. Αυτό σημαίνει ότι μπορείτε να χρησιμοποιήσετε την εφαρμογή για κάθε σκοπό χωρίς χρέωση, αλλά δεν υπάρχουν εγγυήσεις καμίας φύσης.%n%nΔείτε την ιστοσελίδα του Aegisub για πληροφορίες σχετικά με την απόκτηση του πηγαίου κώδικα.
-eu.WelcomeLabel2=Honek Aegisub {#BUILD_GIT_VERSION_STRING} ezarriko du zure ordenagailuan.%n%nAegisub GNU Baimen Publiko Orokorra 2. bertsioa Baimenak estalia dago. Honek esanahi du aplikazio hau edozein asmotarako erabili dezakezula ordaindu behar izan gabe, baina ez da inolako berme motarik ematen.%n%nIkusi Aegisub webgunea iturburu kodea lortzeko argibideetarako.
-id.WelcomeLabel2=Ini akan memasang Aegisub {#BUILD_GIT_VERSION_STRING} di komputer Anda.%n%nAegisub dilindungi oleh Lisensi Publik Umum GNU versi 2. Artinya Anda bisa menggunakan aplikasi ini untuk tujuan apa pun tanpad dipungut biaya, tapi tidak ada jaminan yang bisa diberikan.%n%nLihat laman situs Aegisub untuk memperoleh informasi sumber kode.
-zh_CN.WelcomeLabel2=将会在您的电脑上安装Aegisub {#BUILD_GIT_VERSION_STRING} 。%n%n Aegisub适用于GNU通用公共许可证第二版(GPLv2)，这意味着您可以将该应用程序用于任何目的而不需要支付费用，但同时也不会得到任何形式的担保。%n%n您可以到Aegisub官网获取源代码信息。
-zh_TW.WelcomeLabel2=將會在您的電腦上安裝Aegisub {#BUILD_GIT_VERSION_STRING} 。%n%n Aegisub適用於GNU通用公共許可證第二版(GPLv2)，這意味著您可以將該應用程式用於任何目的而不需要支付費用，但同時也不會得到任何形式的擔保。%n%n您可以到Aegisub官網獲取原始程式碼資訊。
 #endif
