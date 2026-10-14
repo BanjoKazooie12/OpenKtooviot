@@ -105,6 +105,7 @@ if get_option('official_release')
     conf.set('AEGI_OFFICIAL_RELEASE', 1)
 endif
 conf.set('WITH_UPDATE_CHECKER', get_option('enable_update_checker'))
+conf.set('WITH_AI_AGENT', get_option('enable_ai_agent'))
 if get_option('enable_update_checker')
     conf.set_quoted('UPDATE_CHECKER_SERVER', get_option('update_server'))
     conf.set_quoted('UPDATE_CHECKER_BASE_URL', get_option('update_url'))
@@ -337,6 +338,11 @@ check_deps = [
     ['uchardet', [], 'uchardet', ['uchardet', 'uchardet_dep'], []],
 ]
 
+# Needed to set GTK's default text direction for RTL interface languages
+if cc.get_define('__WXGTK3__', dependencies: wx_defines_dep, prefix: '#include <wx/defs.h>') != ''
+    deps += dependency('gtk+-3.0')
+endif
+
 if host_machine.system() == 'linux'
     if cc.get_define('__WXGTK3__', dependencies: wx_defines_dep, prefix: '#include <wx/defs.h>') != ''
         check_deps += [['libportal-gtk3', [], 'libportal', [], []]]
@@ -420,7 +426,7 @@ endif
 conf_meson = configuration_data()
 conf_meson.set('DEFAULT_PLAYER_AUDIO', def_audio)
 
-if get_option('enable_update_checker')
+if get_option('enable_update_checker') or get_option('enable_ai_agent')
     curl_disable = [
         'tool', 'tests', 'unittests',
         'dict', 'file', 'ftp', 'gopher', 'imap', 'ipfs', 'ldap', 'ldaps',

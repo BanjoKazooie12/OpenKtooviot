@@ -40,6 +40,7 @@ struct OptionAddArgs {
 	double max = INT_MAX;
 	double inc = 1;
 	bool alpha = false;
+	bool password = false;
 };
 
 class OptionPage : public wxScrolled<wxPanel> {

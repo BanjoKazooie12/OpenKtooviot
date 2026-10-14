@@ -89,6 +89,10 @@ SubsTextEditCtrl::SubsTextEditCtrl(wxWindow* parent, wxSize wsize, long style, a
 {
 	osx::ime::inject(this);
 
+	// Scintilla does its own text layout and hit testing, and breaks if the
+	// window itself is mirrored
+	SetLayoutDirection(wxLayout_LeftToRight);
+
 	// Set properties
 	SetWrapMode(wxSTC_WRAP_WORD);
 	SetMarginWidth(1,0);
@@ -124,6 +128,16 @@ SubsTextEditCtrl::SubsTextEditCtrl(wxWindow* parent, wxSize wsize, long style, a
 	}
 
 	Bind(wxEVT_CONTEXT_MENU, &SubsTextEditCtrl::OnContextMenu, this);
+	Bind(wxEVT_STC_MODIFIED, [this](wxStyledTextEvent& evt) {
+		evt.Skip();
+		if (change_handler)
+			change_handler(evt.GetModificationType() & wxSTC_STARTACTION);
+	});
+	Bind(wxEVT_STC_UPDATEUI, [this](wxStyledTextEvent& evt) {
+		evt.Skip();
+		if (selection_handler)
+			selection_handler();
+	});
 	Bind(wxEVT_IDLE, std::bind(&SubsTextEditCtrl::UpdateCallTip, this));
 	Bind(wxEVT_STC_DOUBLECLICK, &SubsTextEditCtrl::OnDoubleClick, this);
 	Bind(wxEVT_STC_STYLENEEDED, [this](wxStyledTextEvent&) {
@@ -358,6 +372,20 @@ void SubsTextEditCtrl::SetTextTo(std::string const& text) {
 
 	SetEvtHandlerEnabled(true);
 	Thaw();
+}
+
+std::string SubsTextEditCtrl::GetEditorText() {
+	auto data = GetTextRaw();
+	return std::string(data.data(), data.length());
+}
+
+void SubsTextEditCtrl::SetChangeHandler(std::function<void(bool)> handler) {
+	change_handler = std::move(handler);
+	SetModEventMask(wxSTC_MOD_INSERTTEXT | wxSTC_MOD_DELETETEXT | wxSTC_STARTACTION);
+}
+
+void SubsTextEditCtrl::SetSelectionHandler(std::function<void()> handler) {
+	selection_handler = std::move(handler);
 }
 
 void SubsTextEditCtrl::Paste() {

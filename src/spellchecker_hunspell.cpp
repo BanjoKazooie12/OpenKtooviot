@@ -28,8 +28,48 @@
 
 #include <boost/range/algorithm.hpp>
 
+#include <algorithm>
+#include <optional>
+
+#include <unicode/uscript.h>
+#include <unicode/utf8.h>
+
 #undef near
 #include <hunspell.hxx>
+
+namespace {
+/// The writing system of a word: that of its first letter
+std::optional<int> WordScript(std::string_view word) {
+	int32_t i = 0;
+	int32_t length = static_cast<int32_t>(word.size());
+	while (i < length) {
+		UChar32 c;
+		U8_NEXT(word.data(), i, length, c);
+		if (c < 0) continue;
+		UErrorCode err = U_ZERO_ERROR;
+		UScriptCode script = uscript_getScript(c, &err);
+		if (U_FAILURE(err) || script == USCRIPT_COMMON || script == USCRIPT_INHERITED || script == USCRIPT_UNKNOWN)
+			continue;
+		return script;
+	}
+	return std::nullopt;
+}
+
+/// Writing systems used by a language, e.g. Hebrew for he_IL
+std::vector<int> LanguageScripts(std::string const& language) {
+	UScriptCode codes[8];
+	UErrorCode err = U_ZERO_ERROR;
+	int count = uscript_getCode(language.c_str(), codes, 8, &err);
+	if (U_FAILURE(err)) return {};
+	return std::vector<int>(codes, codes + count);
+}
+}
+
+HunspellSpellChecker::Dictionary::~Dictionary() = default;
+
+bool HunspellSpellChecker::Dictionary::Covers(int script) const {
+	return scripts.empty() || std::find(scripts.begin(), scripts.end(), script) != scripts.end();
+}
 
 HunspellSpellChecker::HunspellSpellChecker()
 : lang_listener(OPT_SUB("Tool/Spell Checker/Language", &HunspellSpellChecker::OnLanguageChanged, this))
@@ -40,10 +80,37 @@ HunspellSpellChecker::HunspellSpellChecker()
 
 HunspellSpellChecker::~HunspellSpellChecker() = default;
 
+HunspellSpellChecker::Dictionary *HunspellSpellChecker::DictionaryFor(std::string_view word) {
+	if (!enabled) return nullptr;
+
+	auto script = WordScript(word);
+	if (!script || (primary && primary->Covers(*script)))
+		return primary.get();
+
+	// The word is in a writing system the chosen dictionary can't check, such
+	// as Hebrew with an English dictionary. Use an installed dictionary for
+	// that writing system if there is one, preferring the interface language.
+	auto it = by_script.find(*script);
+	if (it == by_script.end()) {
+		std::string ui_language = OPT_GET("App/Language")->GetString();
+		std::string found;
+		for (auto const& language : GetLanguageList()) {
+			if (primary && language == primary->language) continue;
+			auto scripts = LanguageScripts(language);
+			if (std::find(scripts.begin(), scripts.end(), *script) == scripts.end()) continue;
+			if (found.empty() || (!ui_language.empty() && language.starts_with(ui_language.substr(0, 2))))
+				found = language;
+		}
+		it = by_script.emplace(*script, found.empty() ? nullptr : LoadDictionary(found)).first;
+	}
+	return it->second.get();
+}
+
 bool HunspellSpellChecker::CanAddWord(std::string_view word) {
-	if (!hunspell) return false;
+	auto dict = DictionaryFor(word);
+	if (!dict) return false;
 	try {
-		conv->Convert(word);
+		dict->conv->Convert(word);
 		return true;
 	}
 	catch (agi::charset::ConvError const&) {
@@ -52,35 +119,37 @@ bool HunspellSpellChecker::CanAddWord(std::string_view word) {
 }
 
 bool HunspellSpellChecker::CanRemoveWord(std::string_view word) {
-	return !!customWords.count(word);
+	auto dict = DictionaryFor(word);
+	return dict && dict->customWords.count(word);
 }
 
 void HunspellSpellChecker::AddWord(std::string_view word) {
-	if (!hunspell) return;
+	auto dict = DictionaryFor(word);
+	if (!dict) return;
 
 	// Add it to the in-memory dictionary
-	hunspell->add(conv->Convert(word));
+	dict->hunspell->add(dict->conv->Convert(word));
 
 	// Add the word
-	if (customWords.insert(std::string(word)).second)
-		WriteUserDictionary();
+	if (dict->customWords.insert(std::string(word)).second)
+		SaveUserWords(*dict);
 }
 
 void HunspellSpellChecker::RemoveWord(std::string_view word) {
-	if (!hunspell) return;
+	auto dict = DictionaryFor(word);
+	if (!dict) return;
 
 	// Remove it from the in-memory dictionary
-	hunspell->remove(conv->Convert(word));
+	dict->hunspell->remove(dict->conv->Convert(word));
 
-	auto word_iter = customWords.find(word);
-	if (word_iter != customWords.end()) {
-		customWords.erase(word_iter);
-
-		WriteUserDictionary();
+	auto word_iter = dict->customWords.find(word);
+	if (word_iter != dict->customWords.end()) {
+		dict->customWords.erase(word_iter);
+		SaveUserWords(*dict);
 	}
 }
 
-void HunspellSpellChecker::ReadUserDictionary() {
+void HunspellSpellChecker::Dictionary::ReadUserDictionary() {
 	customWords.clear();
 
 	// Read the old contents of the user's dictionary
@@ -96,28 +165,32 @@ void HunspellSpellChecker::ReadUserDictionary() {
 	}
 }
 
-void HunspellSpellChecker::WriteUserDictionary() {
+void HunspellSpellChecker::Dictionary::WriteUserDictionary() const {
 	// Ensure that the path exists
 	agi::fs::CreateDirectory(userDicPath.parent_path());
 
 	// Write the new dictionary
-	{
-		agi::io::Save writer(userDicPath);
-		writer.Get() << customWords.size() << "\n";
-		copy(customWords.begin(), customWords.end(), std::ostream_iterator<std::string>(writer.Get(), "\n"));
-	}
+	agi::io::Save writer(userDicPath);
+	writer.Get() << customWords.size() << "\n";
+	copy(customWords.begin(), customWords.end(), std::ostream_iterator<std::string>(writer.Get(), "\n"));
+}
+
+void HunspellSpellChecker::SaveUserWords(Dictionary const& dict) {
+	dict.WriteUserDictionary();
 
 	// Announce a language change so that any other spellcheckers reload the
-	// current dictionary to get the addition/removal
+	// dictionaries to get the addition/removal
 	lang_listener.Block();
 	OPT_SET("Tool/Spell Checker/Language")->SetString(OPT_GET("Tool/Spell Checker/Language")->GetString());
 	lang_listener.Unblock();
 }
 
 bool HunspellSpellChecker::CheckWord(std::string_view word) {
-	if (!hunspell) return true;
+	auto dict = DictionaryFor(word);
+	// Don't flag words that no installed dictionary can check
+	if (!dict) return true;
 	try {
-		return hunspell->spell(conv->Convert(word));
+		return dict->hunspell->spell(dict->conv->Convert(word));
 	}
 	catch (agi::charset::ConvError const&) {
 		return false;
@@ -126,14 +199,21 @@ bool HunspellSpellChecker::CheckWord(std::string_view word) {
 
 std::vector<std::string> HunspellSpellChecker::GetSuggestions(std::string_view word) {
 	std::vector<std::string> suggestions;
-	if (!hunspell) return suggestions;
+	auto dict = DictionaryFor(word);
+	if (!dict) return suggestions;
 
-	std::vector<std::string> results = hunspell->suggest(conv->Convert(word));
+	std::vector<std::string> results;
+	try {
+		results = dict->hunspell->suggest(dict->conv->Convert(word));
+	}
+	catch (agi::charset::ConvError const&) {
+		return suggestions;
+	}
 
 	// Convert suggestions to UTF-8
 	for (auto const& result : results) {
 		try {
-			suggestions.push_back(rconv->Convert(result));
+			suggestions.push_back(dict->rconv->Convert(result));
 		}
 		catch (agi::charset::ConvError const&) {
 			// Shouldn't ever actually happen...
@@ -173,49 +253,59 @@ static bool check_path(agi::fs::path const& path, std::string_view language,
 	return agi::fs::FileExists(aff) && agi::fs::FileExists(dic);
 }
 
-void HunspellSpellChecker::OnLanguageChanged() {
-	hunspell.reset();
-
-	auto language = OPT_GET("Tool/Spell Checker/Language")->GetString();
-	if (language.empty()) return;
-
+std::unique_ptr<HunspellSpellChecker::Dictionary> HunspellSpellChecker::LoadDictionary(std::string const& language) {
 	agi::fs::path aff, dic;
 	auto path = config::path->Decode(OPT_GET("Path/Dictionary")->GetString() + "/");
 	if (!check_path(path, language, aff, dic)) {
 		path = config::path->Decode("?dictionary/");
 		if (!check_path(path, language, aff, dic))
-			return;
+			return nullptr;
 	}
 
 	LOG_I("dictionary/file") << dic;
 
+	auto dict = std::make_unique<Dictionary>();
+	dict->language = language;
+	dict->scripts = LanguageScripts(language);
 #ifdef _WIN32
 	// The prefix makes hunspell assume the paths are UTF-8 and use _wfopen
-	hunspell = std::make_unique<Hunspell>(("\\\\?\\" + aff.string()).c_str(), ("\\\\?\\" + dic.string()).c_str());
+	dict->hunspell = std::make_unique<Hunspell>(("\\\\?\\" + aff.string()).c_str(), ("\\\\?\\" + dic.string()).c_str());
 #else
-	hunspell = std::make_unique<Hunspell>(aff.string().c_str(), dic.string().c_str());
+	dict->hunspell = std::make_unique<Hunspell>(aff.string().c_str(), dic.string().c_str());
 #endif
-	if (!hunspell) return;
+	if (!dict->hunspell) return nullptr;
 
-	conv = std::make_unique<agi::charset::IconvWrapper>("utf-8", hunspell->get_dic_encoding());
-	rconv = std::make_unique<agi::charset::IconvWrapper>(hunspell->get_dic_encoding(), "utf-8");
+	dict->conv = std::make_unique<agi::charset::IconvWrapper>("utf-8", dict->hunspell->get_dic_encoding());
+	dict->rconv = std::make_unique<agi::charset::IconvWrapper>(dict->hunspell->get_dic_encoding(), "utf-8");
 
-	userDicPath = config::path->Decode("?user/dictionaries")/agi::format("user_%s.dic", language);
-	ReadUserDictionary();
+	dict->userDicPath = config::path->Decode("?user/dictionaries")/agi::format("user_%s.dic", language);
+	dict->ReadUserDictionary();
 
-	for (auto const& word : customWords) {
+	for (auto const& word : dict->customWords) {
 		try {
-			hunspell->add(conv->Convert(word));
+			dict->hunspell->add(dict->conv->Convert(word));
 		}
 		catch (agi::charset::ConvError const&) {
 			// Normally this shouldn't happen, but some versions of Aegisub
 			// wrote words in the wrong charset
 		}
 	}
+	return dict;
+}
+
+void HunspellSpellChecker::OnLanguageChanged() {
+	primary.reset();
+	by_script.clear();
+
+	auto language = OPT_GET("Tool/Spell Checker/Language")->GetString();
+	enabled = !language.empty();
+	if (enabled)
+		primary = LoadDictionary(language);
 }
 
 void HunspellSpellChecker::OnPathChanged() {
 	languages.clear();
+	by_script.clear();
 }
 
 #endif // WITH_HUNSPELL

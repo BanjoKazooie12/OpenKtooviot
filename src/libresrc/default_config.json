@@ -12,6 +12,7 @@
 		"First Start" : true,
 		"Hotkey Migrations" : [{"string": "placeholder since empty arrays aren't supported"}],
 		"Language" : "",
+		"Layout Direction" : 0,
 		"Maximized" : false,
 		"Save Charset" : "UTF-8",
 		"Save UI State" : true,
@@ -94,6 +95,20 @@
 
 
 	"Automation" : {
+		"AI Agent" : {
+			"API Key" : "",
+			"Effort" : "high",
+			"Instructions" : "",
+			"Max Frames" : 20,
+			"Model" : "claude-opus-5-5",
+			"Ollama Context Length" : 16384,
+			"Ollama Model" : "",
+			"Ollama URL" : "http://localhost:11434",
+			"Provider" : "claude",
+			"Scope" : 0,
+			"Target Language" : "",
+			"Use Video Frames" : true
+		},
 		"Autoreload Mode" : 1,
 		"Trace Level" : 3
 	},
@@ -383,6 +398,7 @@
 			"Width" : 1280
 		},
 		"Edit Box" : {
+			"Direction" : 0,
 			"Soft Line Break": false,
 			"Font Face" : "",
 			"Font Size" : 10

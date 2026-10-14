@@ -209,6 +209,8 @@ public:
 	, background(nullptr)
 	, direction(direction)
 	{
+		SetLayoutDirection(wxLayout_LeftToRight);
+
 		size.x += 2;
 		size.y += 2;
 
@@ -299,6 +301,8 @@ public:
 	, cols(cols)
 	, cellsize(cellsize)
 	{
+		SetLayoutDirection(wxLayout_LeftToRight);
+
 		colors.resize(rows * cols);
 		SetClientSize(cols*cellsize, rows*cellsize);
 		SetMinSize(GetSize());
@@ -370,6 +374,8 @@ public:
 	, resy(resy)
 	, magnification(magnification)
 	{
+		SetLayoutDirection(wxLayout_LeftToRight);
+
 		SetClientSize(resx*magnification, resy*magnification);
 		SetMinSize(GetSize());
 		SetMaxSize(GetSize());

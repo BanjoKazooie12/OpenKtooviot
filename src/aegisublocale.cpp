@@ -74,6 +74,13 @@ void AegisubLocale::Init(std::string const& language) {
 	active_language = language;
 }
 
+bool AegisubLocale::IsRightToLeft() const {
+	if (active_language.empty())
+		return false;
+	const wxLanguageInfo *info = wxLocale::FindLanguageInfo(to_wx(active_language));
+	return info && info->LayoutDirection == wxLayout_RightToLeft;
+}
+
 bool AegisubLocale::HasLanguage(std::string const& language) {
 	auto langs = GetTranslations()->GetAvailableTranslations(AEGISUB_CATALOG);
 	return std::find(langs.begin(), langs.end(), to_wx(language)) != langs.end();

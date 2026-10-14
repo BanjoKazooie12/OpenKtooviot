@@ -16,6 +16,7 @@ Source: {#BUILD_ROOT}\po\eu\LC_MESSAGES\aegisub.mo;          DestDir: {app}\loca
 Source: {#BUILD_ROOT}\po\fa\LC_MESSAGES\aegisub.mo;          DestDir: {app}\locale\fa;    DestName: aegisub.mo; Flags: ignoreversion; Components: translations
 Source: {#BUILD_ROOT}\po\fr_FR\LC_MESSAGES\aegisub.mo;       DestDir: {app}\locale\fr_FR; DestName: aegisub.mo; Flags: ignoreversion; Components: translations
 Source: {#BUILD_ROOT}\po\gl\LC_MESSAGES\aegisub.mo;          DestDir: {app}\locale\gl;    DestName: aegisub.mo; Flags: ignoreversion; Components: translations
+Source: {#BUILD_ROOT}\po\he\LC_MESSAGES\aegisub.mo;          DestDir: {app}\locale\he;    DestName: aegisub.mo; Flags: ignoreversion; Components: translations
 Source: {#BUILD_ROOT}\po\hu\LC_MESSAGES\aegisub.mo;          DestDir: {app}\locale\hu;    DestName: aegisub.mo; Flags: ignoreversion; Components: translations
 Source: {#BUILD_ROOT}\po\id\LC_MESSAGES\aegisub.mo;          DestDir: {app}\locale\id;    DestName: aegisub.mo; Flags: ignoreversion; Components: translations
 Source: {#BUILD_ROOT}\po\it\LC_MESSAGES\aegisub.mo;          DestDir: {app}\locale\it;    DestName: aegisub.mo; Flags: ignoreversion; Components: translations

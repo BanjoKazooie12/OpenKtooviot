@@ -1,155 +1,131 @@
-# Aegisub
+# OpenKtooviot
 
-For binaries and general information [see the homepage](http://aegisub.org).
+**OpenKtooviot** היא גרסה מעודכנת של עורך הכתוביות Aegisub, עם:
 
-The bug tracker can be found at https://github.com/TypesettingTools/Aegisub/issues.
+- **תמיכה בעברית** – ממשק מתורגם במלואו ובדיקת איות בעברית
+- **תמיכה מלאה בכתיבה מימין לשמאל (RTL)** – בממשק ובתיבת עריכת הכתוביות
+- **סוכן AI מובנה** – לתרגום ולעריכה של כתוביות, כולל צפייה בווידאו
 
-Support is available on [Discord](https://discord.com/invite/AZaVyPr) or [IRC](irc://irc.rizon.net/aegisub).
+> **הבהרה חשובה:** OpenKtooviot הוא פרויקט עצמאי המבוסס על קוד המקור הפתוח של Aegisub.
+> הפרויקט **אינו קשור** למפתחים המקוריים של Aegisub, **אינו מאושר** על ידם ו**אינו נתמך** על ידם.
+> בבקשה אל תפנו אל צוות Aegisub או אל מערכת מעקב הבאגים שלהם בנוגע לגרסה זו –
+> יש לדווח על בעיות במאגר של OpenKtooviot.
 
-## Building Aegisub
+---
 
-### Windows
+## מה חדש בגרסה זו
 
-Prerequisites:
+### תמיכה בעברית
 
-1. Visual Studio (Community edition of any recent version is fine, needs the Windows SDK included)
-2. Python 3
-3. Meson
-4. CMake
+- הממשק כולו – תפריטים, חלונות, הודעות והעדפות – מתורגם לעברית.
+  ניתן לבחור שפה בתפריט **תצוגה ← שפה**.
+- בדיקת האיות בוחרת מילון לפי האלפבית של כל מילה, כך שבשורה שמשלבת עברית ואנגלית
+  כל מילה נבדקת במילון המתאים לה. מילים שאין עבורן מילון מותקן אינן מסומנות כשגויות.
+- תיקוני איות זמינים בלחיצה ימנית על מילה מסומנת, כולל הוספה למילון.
 
-There are a few optional dependencies that must be installed and on your PATH:
+התרגום לעברית נוצר בסיוע AI ועשוי לכלול ניסוחים לא מדויקים – תיקונים יתקבלו בברכה.
 
-1. msgfmt, to build the translations (installing from https://mlocati.github.io/articles/gettext-iconv-windows.html seems to be the easiest option)
-2. InnoSetup, to build the regular installer (iscc.exe on your PATH)
-3. 7zip, to build the regular installer (7z.exe on your PATH)
+### תמיכה מלאה ב-RTL
 
-All other dependencies are either stored in the repository or are included as submodules.
+- כאשר שפת הממשק נכתבת מימין לשמאל (עברית, ערבית, פרסית), הממשק כולו מתהפך:
+  תפריטים, סרגלי כלים, חלונות וסידור הלוחות.
+- תיבת עריכת הכתוביות כותבת מימין לשמאל: הטקסט מתחיל בצד ימין, וסימני פיסוק
+  בסוף משפט מופיעים במקומם הנכון.
+- כיוון כל שורה נקבע לפי האות הראשונה **שמחוץ לתגי העיצוב**, כך ששורה כמו
+  `{\i1}מה שלומך{\i0}?` נכתבת מימין לשמאל ושורה באנגלית נשארת משמאל לימין.
+- רכיבים שמייצגים ציר זמן או קואורדינטות – צורת הגל של השמע, מחוון הווידאו,
+  טבלת הכתוביות ובוחר הצבעים – נשארים משמאל לימין במכוון.
 
-Building:
+ההגדרות נמצאות בהעדפות:
 
-1. Clone Aegisub's repository: `git clone https://github.com/TypesettingTools/Aegisub.git`
-2. From the Visual Studio "x64 Native Tools Command Prompt", generate the build directory: `meson build -Ddefault_library=static` (if building for release, add `--buildtype=release`)
-3. Build with `cd build` and `ninja`
+| הגדרה | מיקום | אפשרויות |
+|---|---|---|
+| כיוון פריסת הממשק | העדפות ← כללי | אוטומטי (לפי השפה) / משמאל לימין / מימין לשמאל |
+| כיוון הטקסט בתיבת העריכה | העדפות ← ממשק ← תיבת עריכה | אוטומטי (לפי הממשק) / משמאל לימין / מימין לשמאל |
 
-You should now have a binary: `aegisub.exe`.
+שתי ההגדרות נכנסות לתוקף לאחר הפעלה מחדש.
 
-Installer:
+### סוכן AI מובנה
 
-You can generate the installer with `ninja win-installer` after a successful build. This assumes a working internet connection and installation of the optional dependencies.
+בתפריט **אוטומציה ← סוכן תרגום AI** נפתח חלון שבו בוחרים שפת יעד, אילו שורות לתרגם
+(השורות הנבחרות או כל הקובץ) והוראות נוספות כמו טון, שמות או מונחים שאין לתרגם.
+אחרי התרגום אפשר להמשיך לבקש שינויים בצ'אט, למשל "להפוך את שורה 12 לרשמית יותר".
 
-You can generate the portable zip with `ninja win-portable` after a successful build.
+הסוכן יכול:
 
-### OS X
+- לקרוא את הקובץ: פרטי הסקריפט, הסגנונות והשורות
+- לערוך את טקסט השורות – השינויים מופיעים מיד, וכל הרצה של הסוכן היא צעד ביטול אחד (Ctrl+Z)
+- לצפות בפריימים מהווידאו הטעון – למשל כדי לזהות מי מדבר ואל מי, כשהשפה דורשת התאמה
+  למגדר (כמו בעברית), או כדי לקרוא שלטים וטקסט על המסך
 
-A vaguely recent version of Xcode and the corresponding command-line tools are required.
+הסוכן שומר על תגי העיצוב (`{\i1}`, `{\an8}` וכו') ועל שבירות השורה (`\N`).
 
-For personal usage, you can use pip and homebrew to install almost all of Aegisub's dependencies:
+**שירותי AI נתמכים** – בוחרים בחלון הסוכן:
 
-    pip3 install meson      # or brew install meson if you installed Python via brew
-    brew install cmake ninja pkg-config  libass boost zlib ffms2 fftw hunspell uchardet
-    export LDFLAGS="-L/usr/local/opt/icu4c/lib"
-    export CPPFLAGS="-I/usr/local/opt/icu4c/include"
-    export PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig"
+| שירות | מה צריך | הערות |
+|---|---|---|
+| Claude (Anthropic API) | מפתח API מ-console.anthropic.com | הבקשות מחויבות בחשבון Anthropic שלכם. המפתח נשמר בהעדפות ← אוטומציה, או במשתנה הסביבה `ANTHROPIC_API_KEY`. |
+| Ollama (מודלים מקומיים) | התקנה של [Ollama](https://ollama.com) ומודל שתומך בכלים | חינמי ופועל במחשב שלכם (או בשרת ברשת המקומית). מומלץ מודל שתומך גם בתמונות, כמו `qwen3-vl:8b`. |
 
-When compiling on Apple Silicon, replace `/usr/local` with `/opt/homebrew`.
-
-Once the dependencies are installed, build Aegisub with `meson build && meson compile -C build`.
-
-#### Build a local DMG
-
-Homebrew bottles target the macOS release they were built for, which may be
-newer than Aegisub's default deployment target. For a local package, target
-the current macOS major release and explicitly request an ad-hoc signature.
-The resulting DMG is for development and personal use on that macOS release;
-release packages use CI's source-built dependencies and the
-[macOS release-signing process](docs/developer_docs.md#macos-release-signing).
+הפעלה מהירה עם Ollama:
 
 ```bash
-deployment_target="$(sw_vers -productVersion)"
-meson setup build_static \
-  -Ddefault_library=static \
-  -Dbuildtype=debugoptimized \
-  -Dbuild_osx_bundle=true \
-  -Dmacos_deployment_target="${deployment_target}" \
-  --force-fallback-for=boost
-meson compile -C build_static
-meson test -C build_static --verbose
-export AEGISUB_BUNDLE_SIGNATURE=-
-meson compile osx-bundle -C build_static
-meson compile osx-build-dmg -C build_static
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull qwen3-vl:8b
 ```
 
-### Linux or other
+כדי להשתמש ב-Ollama שרץ על מחשב אחר ברשת, הגדירו את כתובתו בהעדפות ← אוטומציה ← Ollama
+(למשל `http://192.168.1.50:11434`), והפעילו את Ollama באותו מחשב עם `OLLAMA_HOST=0.0.0.0`.
 
-#### Build dependencies for Debian-based systems
+---
 
-```
-compiler:    build-essential
-pkgconfig:   pkg-config  or  pkgconf
-meson:       meson ninja-build
-gettext:     gettext intltool
-fontconfig:  libfontconfig1-dev
-libass:      libass-dev
-boost:       libboost-chrono-dev libboost-locale-dev libboost-regex-dev libboost-system-dev libboost-thread-dev
-zlib:        zlib1g-dev
-WxWidgets:   wx3.2-headers libwxgtk3.2-dev
-ICU:         icu-devtools libicu-dev
-pulse-audio: libpulse-dev
-ALSA:        libasound2-dev
-OpenAL:      libopenal-dev
-ffms2:       libffms2-dev
-fftw3:       libfftw3-dev
-hunspell:    libhunspell-dev
-uchardet:    libuchardet-dev
-libcurl:     libcurl4-openssl-dev  or  libcurl4-gnutls-dev
-opengl:      libgl1-mesa-dev
-gtest:       libgtest-dev
-gmock:       libgmock-dev
-libportal:   libportal-gtk3-dev
-```
+## טיפ: פיסוק נכון בווידאו
 
-I.e. to install on Ubuntu 24.04 run this command:
-``` bash
-sudo apt install build-essential pkg-config meson ninja-build gettext intltool libfontconfig1-dev libass-dev libboost-chrono-dev libboost-locale-dev libboost-regex-dev libboost-system-dev libboost-thread-dev zlib1g-dev wx3.2-headers libwxgtk3.2-dev icu-devtools libicu-dev libpulse-dev libasound2-dev libopenal-dev libffms2-dev libfftw3-dev libhunspell-dev libuchardet-dev libcurl4-gnutls-dev libgl1-mesa-dev libgtest-dev libgmock-dev libportal-gtk3-dev
+תיבת העריכה מציגה עברית נכון, אבל רוב נגני הווידאו מציגים כל שורת כתובית משמאל לימין
+כברירת מחדל – ולכן נקודה בסוף משפט בעברית עלולה להופיע בצד הלא נכון.
+הפתרון: בעורך הסגנונות, הגדירו את **קידוד (Encoding)** של הסגנון ל-**‎-1‎**
+("זיהוי אוטומטי של כיוון הבסיס"). ההגדרה נתמכת בנגנים שמבוססים על libass,
+כמו mpv ו-VLC, ובתצוגה המקדימה של OpenKtooviot.
+
+---
+
+## בנייה מקוד המקור (Linux)
+
+הבנייה נבדקה ב-Ubuntu. התקנת התלויות:
+
+```bash
+sudo apt install build-essential pkg-config meson ninja-build gettext intltool \
+  libfontconfig1-dev libass-dev libboost-chrono-dev libboost-locale-dev \
+  libboost-regex-dev libboost-system-dev libboost-thread-dev zlib1g-dev \
+  wx3.2-headers libwxgtk3.2-dev icu-devtools libicu-dev libpulse-dev \
+  libasound2-dev libopenal-dev libffms2-dev libfftw3-dev libhunspell-dev \
+  libuchardet-dev libcurl4-gnutls-dev libgl1-mesa-dev libgtest-dev \
+  libgmock-dev libportal-gtk3-dev hunspell-he
 ```
 
-#### Build Aegisub
+(`hunspell-he` הוא מילון האיות העברי; שאר החבילות נדרשות לבנייה.)
 
-``` bash
-meson setup build --prefix=/usr/local --buildtype=release --strip -Dsystem_luajit=false -Ddefault_library=static
+בנייה, הרצת הבדיקות והתקנה:
+
+```bash
+meson setup build --buildtype=debugoptimized --prefix=$HOME/.local/opt/openktooviot
 meson compile -C build
-meson install -C build --skip-subprojects luajit
+meson test -C build
+meson install -C build
 ```
 
-#### Packaging
-If you are packaging Aegisub for a Linux distribution, here are a few things you may need to know:
-- Aegisub cannot be built with LTO (See: https://github.com/TypesettingTools/Aegisub/issues/290).
-- Aegisub depends on LuaJIT and *requires* LuaJIT to be build with Lua 5.2 compatibility enabled.
-  We are aware that most distributions do not compile LuaJIT with this flag, and that this complicates packaging for them, see https://github.com/TypesettingTools/Aegisub/issues/239 for a detailed discussion of the situation.
+את סוכן ה-AI אפשר לכבות בזמן הבנייה עם `-Denable_ai_agent=false`.
 
-  Like for its other dependencies, Aegisub includes a meson subproject for LuaJIT that can be used to statically link a version of LuaJIT with 5.2 compatibility.
-  For distributions that do not allow downloading additional sources at build time, the downloaded LuaJIT subproject is included in the source tarballs distributed with releases.
-- When linked against libstdc++, Aegisub needs libstdc++ 6.0.32 or later due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95048.
-  Aegisub's tests will detect this bug, but if you're not running tests on packaging you'll need to make sure the libstdc++ version is recent enough.
-- Aegisub uses OpenGL through wxWidgets. For Aegisub to work directly on Wayland (as opposed to Xwayland), wxWidgets needs to be built with EGL enabled.
-  Aegisub will automatically fall back to X11 when it detects missing EGL support.
+הבנייה ל-Windows ול-macOS לא נבדקה בגרסה זו. ההוראות הכלליות זהות לאלו של
+[Aegisub המקורי](https://github.com/TypesettingTools/Aegisub#building-aegisub).
 
-The following commands are an example for how to build Aegisub with the goal of creating a distribution package:
+---
 
-```bash
-meson subprojects download luajit              # Or use the tarball
-meson subprojects packagefiles --apply luajit
+## רישיון וקרדיט
 
-meson setup builddir --wrap-mode=nodownload --prefix=/usr --buildtype=release -Dsystem_luajit=false -Ddefault_library=static -Dtests=false
+OpenKtooviot מבוסס על [Aegisub](https://github.com/TypesettingTools/Aegisub),
+© 2004-2012 Aegisub Project ותורמי Aegisub, ומופץ תחת אותם תנאי רישיון –
+ראו את הקובץ [LICENCE](LICENCE). הודעות זכויות היוצרים המקוריות נשמרו.
 
-meson compile -C builddir
-meson install -C builddir --skip-subprojects luajit
-```
-
-## Developer Documenation
-Some documentation for developers is available in [docs/developer_docs.md](docs/developer_docs.md).
-
-## License
-
-All files in this repository are licensed under various GPL-compatible BSD-style licenses; see LICENCE and the individual source files for more information.
-The official Windows and OS X builds are GPLv2 due to including fftw3.
+בהתאם לרישיון, השם Aegisub ושמות התורמים לו אינם משמשים לקידום או לתמיכה בפרויקט זה,
+והאזכור שלהם כאן נועד לציון המקור בלבד.

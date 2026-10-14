@@ -583,6 +583,9 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *controller, agi::C
 , timeline(std::make_unique<AudioDisplayTimeline>(this))
 , style_ranges({{0, 0}})
 {
+	// The audio display is a timeline, so it must not be mirrored in RTL UIs
+	SetLayoutDirection(wxLayout_LeftToRight);
+
 	audio_renderer->SetAmplitudeScale(scale_amplitude);
 	SetZoomLevel(0);
 

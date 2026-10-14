@@ -63,6 +63,9 @@ AudioKaraoke::AudioKaraoke(wxWindow *parent, agi::Context *c)
 {
 	using std::bind;
 
+	// Syllables are laid out along the audio timeline, so keep this LTR
+	SetLayoutDirection(wxLayout_LeftToRight);
+
 	cancel_button = new wxBitmapButton(this, -1, GETBUNDLE(kara_split_cancel, 16));
 	cancel_button->SetToolTip(_("Discard all uncommitted splits"));
 	cancel_button->Bind(wxEVT_BUTTON, bind(&AudioKaraoke::CancelSplit, this));

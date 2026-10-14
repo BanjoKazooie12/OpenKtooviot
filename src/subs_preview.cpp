@@ -52,6 +52,8 @@ SubtitlesPreview::SubtitlesPreview(wxWindow *parent, wxSize size, int winStyle, 
 , sub_file(std::make_unique<AssFile>())
 , line(new AssDialogue)
 {
+	SetLayoutDirection(wxLayout_LeftToRight);
+
 	line->Text = "{\\q2}preview";
 
 	SetStyle(*style);

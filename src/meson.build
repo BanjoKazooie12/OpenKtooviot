@@ -115,6 +115,7 @@ aegisub_src = files(
     'subs_controller.cpp',
     'subs_edit_box.cpp',
     'subs_edit_ctrl.cpp',
+    'subs_edit_native.cpp',
     'subs_preview.cpp',
     'subtitle_format.cpp',
     'subtitle_format_ass.cpp',
@@ -160,6 +161,13 @@ aegisub_src = files(
     'visual_tool_scale.cpp',
     'visual_tool_vector_clip.cpp',
 )
+
+if get_option('enable_ai_agent')
+    aegisub_src += files(
+        'ai_agent.cpp',
+        'dialog_ai_agent.cpp',
+    )
+endif
 
 if host_machine.system() == 'darwin'
     aegisub_src += files(

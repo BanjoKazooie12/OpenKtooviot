@@ -86,7 +86,14 @@ void JsonWriter::Visit(std::string const& str) {
 			case '\n': ostr << "\\n";  break;
 			case '\r': ostr << "\\r";  break;
 			case '\t': ostr << "\\t";  break;
-			default:   ostr << c;      break;
+			default:
+				if (static_cast<unsigned char>(c) < 0x20) {
+					static const char hex[] = "0123456789abcdef";
+					ostr << "\\u00" << hex[(c >> 4) & 0xF] << hex[c & 0xF];
+				}
+				else
+					ostr << c;
+				break;
 		}
 	}
 

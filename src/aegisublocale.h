@@ -41,4 +41,7 @@ public:
 	void Init(std::string const& language);
 	bool HasLanguage(std::string const& language);
 	std::string PickLanguage();
+
+	/// Is the active UI language written right-to-left?
+	bool IsRightToLeft() const;
 };

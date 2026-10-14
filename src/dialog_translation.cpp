@@ -81,6 +81,7 @@ DialogTranslation::DialogTranslation(agi::Context *c)
 		original_box->Add(line_number_display, 0, wxBOTTOM, 5);
 
 		original_text = new wxStyledTextCtrl(original_box->GetStaticBox(), -1, wxDefaultPosition, wxSize(320, 80));
+		original_text->SetLayoutDirection(wxLayout_LeftToRight);
 		original_text->SetWrapMode(wxSTC_WRAP_WORD);
 		original_text->SetMarginWidth(1, 0);
 		original_text->StyleSetForeground(1, wxColour(10, 60, 200));

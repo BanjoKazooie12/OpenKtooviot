@@ -71,6 +71,10 @@
 #include <wx/stackwalk.h>
 #include <wx/utils.h>
 
+#ifdef __WXGTK3__
+#include <gtk/gtk.h>
+#endif
+
 namespace config {
 	agi::Options *opt = nullptr;
 	agi::MRUManager *mru = nullptr;
@@ -91,6 +95,12 @@ static const char *LastStartupState = nullptr;
 void AegisubApp::OnAssertFailure(const wxChar *file, int line, const wxChar *func, const wxChar *cond, const wxChar *msg) {
 	LOG_A("wx/assert") << wxString(file) << ":" << line << ":" << wxString(func) << "() " << wxString(cond) << ": " << wxString(msg);
 	wxApp::OnAssertFailure(file, line, func, cond, msg);
+}
+
+wxLayoutDirection AegisubApp::GetLayoutDirection() const {
+	if (layout_direction != wxLayout_Default)
+		return layout_direction;
+	return wxApp::GetLayoutDirection();
 }
 
 AegisubApp::AegisubApp() {
@@ -254,6 +264,21 @@ bool AegisubApp::OnInit() {
 			OPT_SET("App/Language")->SetString(lang);
 		}
 		locale.Init(lang);
+
+		// Aegisub keeps the C locale for parsing, so wx can't work out the
+		// layout direction on its own; derive it from the interface language
+		switch (OPT_GET("App/Layout Direction")->GetInt()) {
+			case 1: layout_direction = wxLayout_LeftToRight; break;
+			case 2: layout_direction = wxLayout_RightToLeft; break;
+			default:
+				layout_direction = locale.IsRightToLeft() ? wxLayout_RightToLeft : wxLayout_LeftToRight;
+				break;
+		}
+#ifdef __WXGTK3__
+		// GTK widgets which wx doesn't create itself (such as the toolbar
+		// inside wxToolBar and popup menus) use GTK's default direction
+		gtk_widget_set_default_direction(layout_direction == wxLayout_RightToLeft ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
+#endif
 
 #ifdef __APPLE__
 		// When run from an app bundle, LC_CTYPE defaults to "C", which breaks on

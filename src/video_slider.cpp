@@ -57,6 +57,9 @@ VideoSlider::VideoSlider (wxWindow* parent, agi::Context *c)
 	c->project->AddKeyframesListener(&VideoSlider::KeyframesChanged, this),
 }))
 {
+	// The slider represents the video timeline, so it must not be mirrored in RTL UIs
+	SetLayoutDirection(wxLayout_LeftToRight);
+
 	SetClientSize(20,25);
 	SetMinSize(wxSize(20, 25));
 	SetBackgroundStyle(wxBG_STYLE_PAINT);

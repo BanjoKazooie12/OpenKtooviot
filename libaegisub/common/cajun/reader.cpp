@@ -199,6 +199,71 @@ void Reader::MatchExpectedString(std::string const& sExpected, InputStream& inpu
 	}
 }
 
+namespace {
+// Templated on the stream so they can take Reader's private InputStream type
+template<typename Stream>
+unsigned int MatchHexQuad(Stream& inputStream) {
+	unsigned int value = 0;
+	for (int i = 0; i < 4; ++i) {
+		if (inputStream.EOS())
+			throw Reader::ScanException("Unexpected end of \\u escape", inputStream.GetLocation());
+		char c = inputStream.Get();
+		value <<= 4;
+		if (c >= '0' && c <= '9') value |= c - '0';
+		else if (c >= 'a' && c <= 'f') value |= c - 'a' + 10;
+		else if (c >= 'A' && c <= 'F') value |= c - 'A' + 10;
+		else throw Reader::ScanException(std::string("Invalid hex digit in \\u escape: ") + c, inputStream.GetLocation());
+	}
+	return value;
+}
+
+void AppendUtf8(std::string& string, unsigned int cp) {
+	if (cp < 0x80)
+		string.push_back(static_cast<char>(cp));
+	else if (cp < 0x800) {
+		string.push_back(static_cast<char>(0xC0 | (cp >> 6)));
+		string.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+	}
+	else if (cp < 0x10000) {
+		string.push_back(static_cast<char>(0xE0 | (cp >> 12)));
+		string.push_back(static_cast<char>(0x80 | ((cp >> 6) & 0x3F)));
+		string.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+	}
+	else {
+		string.push_back(static_cast<char>(0xF0 | (cp >> 18)));
+		string.push_back(static_cast<char>(0x80 | ((cp >> 12) & 0x3F)));
+		string.push_back(static_cast<char>(0x80 | ((cp >> 6) & 0x3F)));
+		string.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+	}
+}
+
+/// Decode the rest of a \u escape (the "\u" has already been consumed),
+/// combining surrogate pairs. Unpaired surrogates become U+FFFD.
+template<typename Stream>
+void MatchUnicodeEscape(std::string& string, Stream& inputStream) {
+	unsigned int cp = MatchHexQuad(inputStream);
+	if (cp >= 0xD800 && cp <= 0xDBFF) {
+		if (!inputStream.EOS() && inputStream.Peek() == '\\') {
+			inputStream.Get();
+			if (inputStream.EOS() || inputStream.Get() != 'u')
+				throw Reader::ScanException("Expected \\u escape after high surrogate", inputStream.GetLocation());
+			unsigned int low = MatchHexQuad(inputStream);
+			if (low >= 0xDC00 && low <= 0xDFFF)
+				cp = 0x10000 + ((cp - 0xD800) << 10) + (low - 0xDC00);
+			else {
+				AppendUtf8(string, 0xFFFD);
+				cp = (low >= 0xD800 && low <= 0xDBFF) ? 0xFFFD : low;
+			}
+		}
+		else
+			cp = 0xFFFD;
+	}
+	else if (cp >= 0xDC00 && cp <= 0xDFFF)
+		cp = 0xFFFD;
+	AppendUtf8(string, cp);
+}
+}
+
 void Reader::MatchString(std::string& string, InputStream& inputStream) {
 	MatchExpectedString("\"", inputStream);
 
@@ -217,7 +282,7 @@ void Reader::MatchString(std::string& string, InputStream& inputStream) {
 				case 'n':  string.push_back('\n'); break;
 				case 'r':  string.push_back('\r'); break;
 				case 't':  string.push_back('\t'); break;
-				case 'u':  // TODO: what do we do with this?
+				case 'u':  MatchUnicodeEscape(string, inputStream); break;
 				default:
 					throw ScanException(std::string("Unrecognized escape sequence found in string: \\") + c, inputStream.GetLocation());
 			}

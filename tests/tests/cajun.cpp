@@ -282,3 +282,32 @@ TEST(lagi_cajun, bool_roundtrips) {
 TEST(lagi_cajun, null_roundtrips) {
 	EXPECT_STREQ("null", roundtrip_test("null").c_str());
 }
+
+TEST(lagi_cajun, ReadUnicodeEscapes) {
+	json::UnknownElement ue;
+
+	std::istringstream bmp("\"\\u05e9\\u05dc\\u05d5\\u05dd A\\u00e9\"");
+	ASSERT_NO_THROW(json::Reader::Read(ue, bmp));
+	EXPECT_STREQ("\xd7\xa9\xd7\x9c\xd7\x95\xd7\x9d A\xc3\xa9", static_cast<std::string>(ue).c_str());
+
+	std::istringstream pair("\"\\ud83d\\ude00\"");
+	ASSERT_NO_THROW(json::Reader::Read(ue, pair));
+	EXPECT_STREQ("\xf0\x9f\x98\x80", static_cast<std::string>(ue).c_str());
+
+	std::istringstream lone("\"a\\ud83db\"");
+	ASSERT_NO_THROW(json::Reader::Read(ue, lone));
+	EXPECT_STREQ("a\xef\xbf\xbd" "b", static_cast<std::string>(ue).c_str());
+
+	std::istringstream bad_hex("\"\\u12g4\"");
+	EXPECT_THROW(json::Reader::Read(ue, bad_hex), json::Exception);
+
+	std::istringstream short_escape("\"\\u12\"");
+	EXPECT_THROW(json::Reader::Read(ue, short_escape), json::Exception);
+}
+
+TEST(lagi_cajun, WriteEscapesControlCharacters) {
+	std::stringstream stream;
+	agi::JsonWriter::Write(std::string("a\x01" "b\x1f"), stream);
+	EXPECT_STREQ("\"a\\u0001b\\u001f\"", stream.str().c_str());
+	EXPECT_STREQ("\"a\\u0001b\\u001f\"", roundtrip_test("\"a\\u0001b\\u001f\"").c_str());
+}

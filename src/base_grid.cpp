@@ -68,6 +68,9 @@ BaseGrid::BaseGrid(wxWindow* parent, agi::Context *context)
 , columns_visible(OPT_GET("Subtitle/Grid/Column")->GetListBool())
 , seek_listener(context->videoController->AddSeekListener(&BaseGrid::OnSeek, this))
 {
+	// The grid is custom drawn and does its own hit testing, which assumes LTR
+	SetLayoutDirection(wxLayout_LeftToRight);
+
 	scrollBar->SetScrollbar(0,10,100,10);
 
 	auto scrollbarpositioner = new wxBoxSizer(wxHORIZONTAL);

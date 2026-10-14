@@ -154,7 +154,7 @@ wxControl *OptionPage::OptionAdd(PageSection section, const wxString &name, cons
 		}
 
 		case agi::OptionType::String: {
-			auto text = new wxTextCtrl(section.box, -1 , to_wx(opt->GetString()));
+			auto text = new wxTextCtrl(section.box, -1 , to_wx(opt->GetString()), wxDefaultPosition, wxDefaultSize, kwargs.password ? wxTE_PASSWORD : 0);
 			text->Bind(wxEVT_TEXT, StringUpdater(opt_name, parent));
 			Add(section, name, text);
 			return text;

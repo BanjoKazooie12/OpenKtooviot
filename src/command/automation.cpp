@@ -79,6 +79,19 @@ struct open_manager final : public Command {
 	}
 };
 
+#ifdef WITH_AI_AGENT
+struct ai_agent final : public Command {
+	CMD_NAME("am/ai_agent")
+	STR_MENU("AI &Translation Agent...")
+	STR_DISP("AI Translation Agent")
+	STR_HELP("Translate and edit subtitles with an AI agent that can read the file and look at the video")
+
+	void operator()(agi::Context *c) override {
+		ShowAIAgentDialog(c);
+	}
+};
+#endif
+
 struct meta final : public Command {
 	CMD_NAME("am/meta")
 	CMD_ICON(automation_toolbutton)
@@ -106,5 +119,8 @@ namespace cmd {
 		reg(std::make_unique<open_manager>());
 		reg(std::make_unique<reload_all>());
 		reg(std::make_unique<reload_autoload>());
+#ifdef WITH_AI_AGENT
+		reg(std::make_unique<ai_agent>());
+#endif
 	}
 }

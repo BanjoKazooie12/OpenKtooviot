@@ -108,6 +108,7 @@ KaraokeLineMatchDisplay::KaraokeLineMatchDisplay(wxWindow *parent)
 : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxWANTS_CHARS)
 {
 	InheritAttributes();
+	SetLayoutDirection(wxLayout_LeftToRight);
 	SetInputData(nullptr, nullptr);
 
 	wxSize best_size = GetBestSize();

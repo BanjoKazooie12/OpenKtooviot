@@ -57,6 +57,10 @@ class AegisubApp : public wxApp {
 
 	void OnAssertFailure(const wxChar *file, int line, const wxChar *func, const wxChar *cond, const wxChar *msg) override;
 
+	/// Direction used for the UI, decided once the interface language is known
+	wxLayoutDirection layout_direction = wxLayout_Default;
+	wxLayoutDirection GetLayoutDirection() const override;
+
 	void UnhandledException(bool);
 
 	void OpenFiles(wxArrayStringsAdapter filenames);

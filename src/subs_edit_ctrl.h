@@ -29,6 +29,8 @@
 
 #pragma once
 
+#include "subs_text_editor.h"
+
 #include <libaegisub/signal.h>
 
 #include <memory>
@@ -45,7 +47,7 @@ namespace agi {
 
 /// @class SubsTextEditCtrl
 /// @brief A Scintilla control with spell checking and syntax highlighting
-class SubsTextEditCtrl final : public wxStyledTextCtrl, private agi::signal::ConnectionScope {
+class SubsTextEditCtrl final : public wxStyledTextCtrl, public SubsTextEditor, private agi::signal::ConnectionScope {
 	/// Backend spellchecker to use
 	std::unique_ptr<agi::SpellChecker> spellchecker;
 
@@ -84,6 +86,9 @@ class SubsTextEditCtrl final : public wxStyledTextCtrl, private agi::signal::Con
 	/// Tokenized version of line_text
 	std::vector<agi::ass::DialogueToken> tokenized_line;
 
+	std::function<void(bool)> change_handler;
+	std::function<void()> selection_handler;
+
 	void OnContextMenu(wxContextMenuEvent &);
 	void OnDoubleClick(wxStyledTextEvent&);
 	void OnUseSuggestion(wxCommandEvent &event);
@@ -117,7 +122,17 @@ public:
 	SubsTextEditCtrl(wxWindow* parent, wxSize size, long style, agi::Context *context);
 	~SubsTextEditCtrl();
 
-	void SetTextTo(std::string const& text);
+	void SetTextTo(std::string const& text) override;
+
+	// SubsTextEditor
+	wxWindow *GetEditorWindow() override { return this; }
+	std::string GetEditorText() override;
+	int GetCursorPos() override { return GetCurrentPos(); }
+	int GetSelStart() override { return GetSelectionStart(); }
+	int GetSelEnd() override { return GetSelectionEnd(); }
+	void SetSel(int start, int end) override { SetSelection(start, end); }
+	void SetChangeHandler(std::function<void(bool)> handler) override;
+	void SetSelectionHandler(std::function<void()> handler) override;
 	void Paste() override;
 
 	std::pair<int, int> GetBoundsOfWordAtPosition(int pos);

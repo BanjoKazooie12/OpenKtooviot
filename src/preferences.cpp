@@ -107,6 +107,9 @@ void General(wxTreebook *book, Preferences *parent) {
 	wxString autoload_modes[] = { _("Never"), _("Always"), _("Ask") };
 	wxArrayString autoload_modes_arr(3, autoload_modes);
 	p->OptionChoice(general, _("Automatically load linked files"), autoload_modes_arr, "App/Auto/Load Linked Files");
+	wxString layout_directions[] = { _("Automatic (from language)"), _("Left to right"), _("Right to left") };
+	wxArrayString layout_directions_arr(3, layout_directions);
+	p->OptionChoice(general, _("Interface layout direction (requires restart)"), layout_directions_arr, "App/Layout Direction");
 	p->OptionAdd(general, _("Undo Levels"), "Limits/Undo Levels", {.min = 2, .max = 10000});
 
 	auto recent = p->PageSizer(_("Recently Used Lists"));
@@ -274,6 +277,9 @@ void Interface(wxTreebook *book, Preferences *parent) {
 	p->OptionAdd(edit_box, _("Enable call tips"), "App/Call Tips");
 	p->OptionAdd(edit_box, _("Overwrite in time boxes"), "Subtitle/Time Edit/Insert Mode");
 	p->OptionAdd(edit_box, _("Shift+Enter adds \\n"), "Subtitle/Edit Box/Soft Line Break");
+	wxString text_directions[] = { _("Automatic (from interface)"), _("Left to right"), _("Right to left") };
+	wxArrayString text_directions_arr(3, text_directions);
+	p->OptionChoice(edit_box, _("Text direction (requires restart)"), text_directions_arr, "Subtitle/Edit Box/Direction");
 	p->OptionAdd(edit_box, _("Enable syntax highlighting"), "Subtitle/Highlight/Syntax");
 	p->OptionBrowse(edit_box, _("Dictionaries path"), "Path/Dictionary");
 	p->OptionFont(edit_box, "Subtitle/Edit Box/");
@@ -412,6 +418,29 @@ void Automation(wxTreebook *book, Preferences *parent) {
 	const wxString ar_arr[4] = { _("No scripts"), _("Subtitle-local scripts"), _("Global autoload scripts"), _("All scripts") };
 	wxArrayString ar_choice(4, ar_arr);
 	p->OptionChoice(general, _("Autoreload on Export"), ar_choice, "Automation/Autoreload Mode");
+
+#ifdef WITH_AI_AGENT
+	auto agent = p->PageSizer(_("AI Translation Agent"));
+	p->OptionAdd(agent, _("Max video frames per request"), "Automation/AI Agent/Max Frames", {.min = 0, .max = 100});
+
+	auto claude = p->PageSizer(_("Claude (Anthropic API)"));
+	p->OptionAdd(claude, _("Claude API key"), "Automation/AI Agent/API Key", {.password = true})->SetMinSize(wxSize(300, -1));
+	const wxString effort_arr[5] = { "low", "medium", "high", "xhigh", "max" };
+	wxArrayString effort_choice(5, effort_arr);
+	p->OptionChoice(claude, _("Effort"), effort_choice, "Automation/AI Agent/Effort");
+	auto key_note = new wxStaticText(claude.box, wxID_ANY, _("If the key is empty, the ANTHROPIC_API_KEY environment variable is used. The key is stored unencrypted in Aegisub's config file. Requests are billed to the key's Anthropic account."));
+	key_note->Wrap(400);
+	claude.sizer->Add(key_note, 0, wxALL, 5);
+	p->CellSkip(claude);
+
+	auto ollama = p->PageSizer(_("Ollama (local models)"));
+	p->OptionAdd(ollama, _("Server address"), "Automation/AI Agent/Ollama URL")->SetMinSize(wxSize(300, -1));
+	p->OptionAdd(ollama, _("Context length (tokens)"), "Automation/AI Agent/Ollama Context Length", {.min = 2048, .max = 1048576, .inc = 1024});
+	auto ollama_note = new wxStaticText(ollama.box, wxID_ANY, _("Models run on this computer through Ollama (ollama.com). A longer context lets the agent work on more lines at once but needs more memory."));
+	ollama_note->Wrap(400);
+	ollama.sizer->Add(ollama_note, 0, wxALL, 5);
+	p->CellSkip(ollama);
+#endif
 
 	p->SetSizerAndFit(p->sizer);
 }

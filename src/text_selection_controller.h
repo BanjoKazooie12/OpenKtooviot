@@ -18,8 +18,7 @@
 
 #include <libaegisub/signal.h>
 
-class wxStyledTextCtrl;
-class wxStyledTextEvent;
+class SubsTextEditor;
 
 class TextSelectionController {
 	int selection_start = 0;
@@ -27,9 +26,9 @@ class TextSelectionController {
 	int insertion_point = 0;
 	bool changing = false;
 
-	wxStyledTextCtrl *ctrl = nullptr;
+	SubsTextEditor *ctrl = nullptr;
 
-	void UpdateUI(wxStyledTextEvent &evt);
+	void UpdateUI();
 
 	agi::signal::Signal<> AnnounceSelectionChanged;
 
@@ -41,7 +40,7 @@ public:
 	int GetSelectionEnd() const { return selection_end; }
 	int GetInsertionPoint() const { return insertion_point; }
 
-	void SetControl(wxStyledTextCtrl *ctrl);
+	void SetControl(SubsTextEditor *ctrl);
 	~TextSelectionController();
 
 	DEFINE_SIGNAL_ADDERS(AnnounceSelectionChanged, AddSelectionListener)

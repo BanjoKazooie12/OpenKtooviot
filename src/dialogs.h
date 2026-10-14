@@ -64,6 +64,7 @@ bool ShowPlainTextImportDialog();
 void ShowAboutDialog(wxWindow *parent);
 void ShowAttachmentsDialog(wxWindow *parent, AssFile *file);
 void ShowAutomationDialog(agi::Context *c);
+void ShowAIAgentDialog(agi::Context *c);
 void ShowExportDialog(agi::Context *c);
 void ShowFontsCollectorDialog(agi::Context *c);
 void ShowJumpToDialog(agi::Context *c);

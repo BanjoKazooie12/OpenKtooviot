@@ -27,29 +27,51 @@
 #include <libaegisub/fs.h>
 #include <libaegisub/signal.h>
 
+#include <map>
 #include <memory>
 #include <set>
 
 namespace agi { namespace charset { class IconvWrapper; } }
 class Hunspell;
 
-/// @brief Hunspell-based spell checker implementation
 class HunspellSpellChecker final : public agi::SpellChecker {
-	/// Hunspell instance
-	std::unique_ptr<Hunspell> hunspell;
+	/// A loaded dictionary and the user's additions to it
+	struct Dictionary {
+		std::string language;
+		std::unique_ptr<Hunspell> hunspell;
 
-	/// Conversions between the dictionary charset and utf-8
-	std::unique_ptr<agi::charset::IconvWrapper> conv;
-	std::unique_ptr<agi::charset::IconvWrapper> rconv;
+		/// Conversions between the dictionary charset and utf-8
+		std::unique_ptr<agi::charset::IconvWrapper> conv;
+		std::unique_ptr<agi::charset::IconvWrapper> rconv;
+
+		/// Writing systems (ICU UScriptCodes) of the dictionary's language.
+		/// Empty if they couldn't be determined.
+		std::vector<int> scripts;
+
+		/// Path to user-local dictionary.
+		agi::fs::path userDicPath;
+
+		/// Words in the custom user dictionary
+		std::set<std::string, std::less<>> customWords;
+
+		~Dictionary();
+		bool Covers(int script) const;
+		void ReadUserDictionary();
+		void WriteUserDictionary() const;
+	};
+
+	/// The dictionary the user chose
+	std::unique_ptr<Dictionary> primary;
+
+	/// False if the user turned spell checking off
+	bool enabled = false;
+
+	/// Dictionaries for words written in a script the chosen dictionary can't
+	/// check, by script. A null entry means there's no dictionary for it.
+	std::map<int, std::unique_ptr<Dictionary>> by_script;
 
 	/// Languages which we have dictionaries for
 	std::vector<std::string> languages;
-
-	/// Path to user-local dictionary.
-	agi::fs::path userDicPath;
-
-	/// Words in the custom user dictionary
-	std::set<std::string, std::less<>> customWords;
 
 	/// Dictionary language change connection
 	agi::signal::Connection lang_listener;
@@ -61,10 +83,14 @@ class HunspellSpellChecker final : public agi::SpellChecker {
 	/// Dictionary path change handler
 	void OnPathChanged();
 
-	/// Load words from custom dictionary
-	void ReadUserDictionary();
-	/// Save words to custom dictionary
-	void WriteUserDictionary();
+	std::unique_ptr<Dictionary> LoadDictionary(std::string const& language);
+
+	/// The dictionary to check the word with, or null if no available
+	/// dictionary can check it (it's in another writing system)
+	Dictionary *DictionaryFor(std::string_view word);
+
+	/// Save a dictionary's custom words, and tell other spell checkers
+	void SaveUserWords(Dictionary const& dict);
 
 public:
 	HunspellSpellChecker();
